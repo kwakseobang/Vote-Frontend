@@ -17,14 +17,29 @@ import SwiftUI
 /// 정리하자면 닉네임 중복확인과 이메일 인증을 거친 후 비번까지 확인. 그 후. 회원 가입 누르면 회원가입 요청 (닉네임, 이메일, 비밀번호 입
 ///
 struct SignUpView: View {
-//    @StateObject private var signUpViewModel = SignUpViewModel()
-//    @Environment(\.presentationMode) var mode // 화면 전환
+    @StateObject private var signUpViewModel = SignUpViewModel()
+    @Environment(\.presentationMode) var mode // 화면 전환
+    
+    @State var username: String = ""
+    @State var password: String = ""
+    
+    @State var nickname: String = ""
     var body: some View {
         VStack{
             ScrollView {
                 HeaderView()
-                ShowView(signUpViewModel: signUpViewModel)
-                SignUpBtnView(signUpViewModel: signUpViewModel)
+                ShowView(
+                    signUpViewModel: signUpViewModel,
+                    username: $username,
+                    password: $password,
+                    nickname: $nickname
+                )
+                SignUpBtnView(
+                    signUpViewModel: signUpViewModel,
+                    username: $username,
+                    password: $password,
+                    nickname: $nickname
+                )
             }
             .navigationBarBackButtonHidden(true)
             .navigationBarTitle("회원가입")
@@ -45,18 +60,18 @@ struct SignUpView: View {
 // MARK: - 헤더 뷰
 private struct HeaderView: View {
     fileprivate var body: some View {
-        Image(systemName: "house")
+        Image(systemName: "hand.thumbsup.fill")
             .resizable()
             .scaledToFit()
             .frame(width: 100)
             .padding()
         
-        Text("안서동 자취방 정보는")
+        Text("간편한 투표 App vote is goat")
             .font(.system(size: 20,weight: .semibold))
         HStack{
-            Text("안방")
+            Text("voat")
                 .font(.system(size: 40,weight: .bold))
-            Image(systemName: "house")
+            Image(systemName: "hand.thumbsup.fill")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30)
@@ -69,25 +84,35 @@ private struct HeaderView: View {
 // MARK: - 바디 뷰
 private struct ShowView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
+    @Binding var username: String
+    @Binding var password: String
+    @Binding var nickname: String
     
-    
-    fileprivate init(signUpViewModel: SignUpViewModel) {
+    fileprivate init(
+        signUpViewModel: SignUpViewModel,
+        username: Binding<String>,
+        password: Binding<String>,
+        nickname: Binding<String>
+    )  {
         self.signUpViewModel = signUpViewModel
+        self._username = username
+        self._password = password
+        self._nickname = nickname
     }
     
     fileprivate var body: some View {
         VStack(alignment: .leading,spacing: 20) {
             HStack {
                 InputView(
-//                    ischeck: $viewModel.IscheckName,
-                    text: $signUpViewModel.user.userInfo.name,
+                    text: $nickname,
+                    signUpViewModel: signUpViewModel,
                     title: "닉네임",
                     placeholder: "닉네임을 입력해주세요",
                     stateCheck: signUpViewModel.IscheckName
                 )
                 Button {
                     //TODO: - 중복 확인 API
-                    signUpViewModel.checkName()
+                    signUpViewModel.nicknameRequest(nickname);
                 } label: {
                     Text("중복확인")
                 }
@@ -97,27 +122,28 @@ private struct ShowView: View {
             
             HStack {
                 InputView(
-//                    ischeck: viewModel.IscheckName,
-                    text: $signUpViewModel.user.userInfo.email,
-                    title: "학교 E-mail",
-                    placeholder: "학교 이메일을 입력해주세요",
-                    stateCheck: signUpViewModel.IsEmailName
+                    text: $username,
+                    signUpViewModel: signUpViewModel,
+                    title: "아이디",
+                    placeholder: "아이디룰 입력해주세요",
+                    stateCheck: signUpViewModel.IsUsername
                 )
                 .textInputAutocapitalization(.never)
                 .autocapitalization(.none)
                 
                 Button {
                     //TODO: - 인증 확인 API
-                    signUpViewModel.checkEmail()
+                    signUpViewModel.usernameRequest(username);
                 } label: {
-                    Text(signUpViewModel.IsEmailName ? "인증완료" :"인증확인")
+                    Text( "중복 확인")
                         
                 }
                 .buttonStyle(CheckBtnStyle())
             }
             
             InputView(
-                text: $signUpViewModel.user.userInfo.password,
+                text: $password,
+                signUpViewModel: signUpViewModel,
                 title: "비밀번호",
                 placeholder: "비밀번호를 8자리 이상 입력해주세요",
                 isSecureField: true
@@ -126,10 +152,11 @@ private struct ShowView: View {
             
             InputView(
                 text: $signUpViewModel.confirmPassword,
+                signUpViewModel: signUpViewModel,
                 title: "비밀번호 확인",
                 placeholder: "다시 한번 입력해주세요",
                 isSecureField: true,
-                checkPassword: signUpViewModel.comparePassword()
+                checkPassword: signUpViewModel.comparePassword(password)
             )
             .textContentType(.oneTimeCode)
         }
@@ -140,6 +167,7 @@ private struct ShowView: View {
 // MARK: - 입력 뷰
 private struct InputView: View {
     @Binding var text: String
+    @ObservedObject  var signUpViewModel: SignUpViewModel
     @State var isPasswordCountError: Bool = false
     var title: String
     var placeholder: String
@@ -168,14 +196,24 @@ private struct InputView: View {
                         .font(.system(size: 15))
                         .padding(.vertical,13)
                         .background(.thinMaterial)
+                        .autocapitalization(.none) // 대문자 설정 지우기
                         .cornerRadius(10)
+                        .onChange(of: text) { newValue in
+                                        // 텍스트가 비어있으면 상태 초기화
+                                        if newValue.isEmpty {
+                                            if title == "아이디" {
+                                                signUpViewModel.IsUsername = false
+                                            } else {
+                                                signUpViewModel.IscheckName = false
+                                            }
+                                        }
+                                    }
                         .overlay(
                             HStack{
                                 Image(systemName: stateCheck ? "checkmark.circle" :"xmark.circle")
                                     .rotation3DEffect(.degrees(stateCheck ? 360 : 0), axis: (x: 0, y: 0, z: 1))
                                     .animation(.default, value: stateCheck)
                                     .foregroundColor(text.isEmpty ? .clear : stateCheck ? .blue :.red)
-                                
                                     .frame(minWidth: 0, maxWidth: .infinity, alignment: .trailing)
                                     .padding(.trailing, 8)
                             }
@@ -191,22 +229,36 @@ private struct InputView: View {
 private struct SignUpBtnView: View {
     @ObservedObject var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var mode
-    fileprivate init(signUpViewModel: SignUpViewModel) {
+    @Binding var username: String
+    @Binding var password: String
+    @Binding var nickname: String
+    
+    fileprivate init(
+        signUpViewModel: SignUpViewModel,
+        username: Binding<String>,
+        password: Binding<String>,
+        nickname: Binding<String>
+    )  {
         self.signUpViewModel = signUpViewModel
+        self._username = username
+        self._password = password
+        self._nickname = nickname
     }
+ 
     
     fileprivate var body: some View {
         Button {
-            if signUpViewModel.comparePassword() {
-                //TODO: - User 데이터 서버로 전송
-                signUpViewModel.sendUserDate()
-                
-                mode.wrappedValue.dismiss()
-                    
-                  
-            }else {
-                //TODO: -
-            }
+            signUpViewModel.signupRequest(username: username, password: password, nickname: nickname)
+//            if signUpViewModel.comparePassword() {
+//                //TODO: - User 데이터 서버로 전송
+//                signUpViewModel.sendUserDate()
+//                
+//                mode.wrappedValue.dismiss()
+//                    
+//                  
+//            }else {
+//                //TODO: -
+//            }
         } label: {
             HStack {
                 Text("회원 가입")
@@ -219,8 +271,8 @@ private struct SignUpBtnView: View {
         .background(Color(.systemBlue))
         .cornerRadius(10)
         .padding(.top,25)
-        .disabled(!signUpViewModel.checkSignUpCondition())
-        .opacity(signUpViewModel.checkSignUpCondition() ? 1.0 : 0.5)
+        .disabled(!signUpViewModel.checkSignUpCondition(password: password))
+        .opacity(signUpViewModel.checkSignUpCondition(password: password) ? 1.0 : 0.5)
     
     }
 }

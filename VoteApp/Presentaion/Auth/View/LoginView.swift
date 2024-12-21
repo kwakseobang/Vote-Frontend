@@ -11,20 +11,22 @@ struct LoginView: View {
     @State var username: String = ""
     @State var password: String = ""
     var body: some View {
-        VStack {
-            TitleView()
-                .padding(.top,40)
-            Spacer()
-                .frame(height: 30)
-            LoginInputView(username: $username, password: $password)
-            
-            LoginTabView(username: $username, password: $password)
-                .padding(.vertical,5)
-            
-//            FindAccountView()
-            Spacer()
-                .frame(height: 50)
-            CreateInfoBtnView()
+        NavigationStack{
+            VStack {
+                TitleView()
+                    .padding(.top,40)
+                Spacer()
+                    .frame(height: 30)
+                LoginInputView(username: $username, password: $password)
+                
+                LoginTabView(username: $username, password: $password)
+                    .padding(.vertical,5)
+                
+                //            FindAccountView()
+                Spacer()
+                    .frame(height: 50)
+                CreateInfoBtnView()
+            }
         }
     }
 }
@@ -127,7 +129,7 @@ private struct CreateInfoBtnView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.gray)
             NavigationLink {
-                EmptyView()
+                SignUpView()
             }label: {
                 Text("회원가입 >")
                     .foregroundColor(Color("mainColor"))
