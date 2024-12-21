@@ -9,12 +9,28 @@ import Foundation
 
 
 struct Auth {
-    // MARK: - Welcome
+    // MARK: - 회원가입
     struct SignUpResponse: Codable {
         let status: Int
         let message, code: String
         let data: JSONNull?
     }
+    
+    // MARK: - 로그인
+    
+    struct loginResponse: Codable {
+            let status: Int
+            let message, code: String
+            let data: Token? 
+        
+        // MARK: - DataClass
+        struct Token: Codable {
+            let grantType, accessToken: String
+            let accessTokenExpiresIn: Int
+        }
+
+    }
+    
 }
 // MARK: - Encode/decode helpers
 
