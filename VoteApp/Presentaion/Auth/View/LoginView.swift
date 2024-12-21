@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct LoginView: View {
+    @EnvironmentObject private var loginViewModel: LoginViewModel
+    @StateObject private var pathModel = PathModel()
     @State var username: String = ""
     @State var password: String = ""
     var body: some View {
-        NavigationStack{
+        NavigationStack(path: $pathModel.tabPaths){
             VStack {
                 TitleView()
                     .padding(.top,40)
@@ -21,13 +23,22 @@ struct LoginView: View {
                 
                 LoginTabView(username: $username, password: $password)
                     .padding(.vertical,5)
-                
-                //            FindAccountView()
+            
                 Spacer()
                     .frame(height: 50)
                 CreateInfoBtnView()
             }
+            .navigationDestination(for: PathType.self) { pathType in
+                switch pathType {
+                case .homeView:
+                    HomeView()
+                        .navigationBarBackButtonHidden()
+                // TODO: - 경로 추가 예정
+                }
+            }
         }
+        .environmentObject(pathModel)
+        .environmentObject(loginViewModel)
     }
 }
 //MARK: - 헤더 뷰
@@ -39,18 +50,21 @@ private struct TitleView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100)
+                    .foregroundColor(Color("chat-notice"))
                     .padding()
                 
                 Text("간편한 투표 App vote is goat")
                     .font(.system(size: 20,weight: .semibold))
+//                    .foregroundColor(Color("mainColor"))
                 HStack{
                     Text("voat")
                         .font(.system(size: 40,weight: .bold))
+                        .foregroundColor(Color("chat-notice"))
                     Image(systemName: "hand.thumbsup.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 30)
-                        .foregroundColor(.black)
+                        .foregroundColor(Color("chat-notice"))
 
                 }
                 .padding(.leading)
@@ -88,24 +102,42 @@ private struct LoginInputView: View {
     }
     
 }
-
+// MARK: - 로그인 탭 뷰
 private struct LoginTabView: View {
- 
+    @EnvironmentObject private var pathModel: PathModel
+    @EnvironmentObject private var loginViewModel: LoginViewModel
     @Binding var username: String
     @Binding var password: String
+    @State private var isShowingAlert: Bool = false
+    @State private var alertMessage: String = ""
     
     @State private var tag: Int? = nil
     
     fileprivate var body: some View {
         Button {
-           
+            loginViewModel.loginRequest(username: username, password: password) { isSuccess in
+                if isSuccess {
+                    // 로그인 성공 후 access token을 가져와서 처리
+                    let at = UserDefaultsManager.getData(type: String.self, forKey: .accessToken) ?? "사용자"
+                    print("accessToken: " + at)
+                    
+                    // 탭에 homeView 추가
+//                    if !pathModel.tabPaths.contains(.homeView) {
+                        pathModel.tabPaths.append(.homeView)
+//                    }
+                } else {
+                    // 로그인 실패, 얼럿 표시
+                    alertMessage = "로그인 실패. 다시 시도해주세요."
+                    isShowingAlert = true
+                }
+            }
         } label: {
-            HStack{
+            HStack {
                 Text("Login")
                 Image(systemName: "house")
             }
         }
-        
+
         .disabled((username.isEmpty || password.isEmpty) ? true : false) // 둘 다 입력 시
         .font(.system(size: 20,weight: .bold))
         .frame(width: 330,height: 20)
@@ -116,11 +148,13 @@ private struct LoginTabView: View {
         )
         .background(Color((username.isEmpty || password.isEmpty) ? "sky_bg": "mainColor"))
         .foregroundColor(.white)
-        
+        .alert(isPresented: $isShowingAlert) {
+            Alert(title: Text("로그인 실패"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
+        }
     }
 }
-//    
 
+// MARK: - 회원가입 뷰
 private struct CreateInfoBtnView: View {
     fileprivate var body: some View {
         
@@ -142,4 +176,5 @@ private struct CreateInfoBtnView: View {
 }
 #Preview {
     LoginView()
+        .environmentObject(LoginViewModel())
 }
