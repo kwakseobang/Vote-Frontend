@@ -4,6 +4,7 @@
 //
 //  Created by 곽서방 on 12/23/24.
 //
+// 현재 백엔드 수정해야됨 지금 해야될 일
 
 import Foundation
 import Alamofire
@@ -16,10 +17,18 @@ class RefreshTokenAPI {
             completion(.failure(NSError(domain: "Invalid URL", code: 400, userInfo: nil)))
             return
         }
-        
+        var accessToken = ""
+        if let Token = UserDefaultsManager.getData(type: String.self, forKey: .accessToken) {
+            print("Access Token: \(accessToken)")
+            accessToken = Token
+        } else {
+            print("No access token found")
+            completion(.failure(NSError(domain: "No access token found", code: 404, userInfo: nil)))
+        }
         // 헤더 설정 (Content-Type은 application/json)
         let headers: HTTPHeaders = [
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
         ]
         
         // Alamofire로 요청을 보내어 리프레쉬 토큰을 사용해 새 액세스 토큰을 받아옴
