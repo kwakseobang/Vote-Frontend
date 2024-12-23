@@ -18,7 +18,7 @@ struct Auth {
     
     // MARK: - 로그인
     
-    struct loginResponse: Codable {
+    struct TokenResponse: Codable {
             let status: Int
             let message, code: String
             let data: Token? 
