@@ -11,17 +11,32 @@ import Alamofire
 class VoteViewModel: ObservableObject {
     @Published var votes: [Vote.Votes]
     @Published var error: CustomError? = nil // 오류 메시지를 표시하기 위한 프로퍼티
+    @Published var vote: Vote.VoteDetails
+    @Published var voteItems: [Vote.VoteItem]
     
     
-    
-    init(votes: [Vote.Votes] = []) {
+    init(
+        votes: [Vote.Votes] = [],
+        voteItems: [Vote.VoteItem] = [],
+        vote: Vote.VoteDetails = .init(voteID: 1, title: "", selectedItemID: 1, selectedVoteItem: "", createdTime: "", voteItems: [])
+    ) {
         self.votes = votes
-        
+        self.voteItems = voteItems
+        self.vote = vote
     }
     
+    
+    
+    
+}
+extension VoteViewModel {
+    
+}
+
+// MARK: - API 호출 전용
+extension VoteViewModel {
+    
     func getVoteList(){
-        
-        
         guard let url = URL(string:APIConstants.voteURL) else {
             print("Invalid URL")
             return
@@ -60,4 +75,5 @@ class VoteViewModel: ObservableObject {
             }
         
     }
+
 }

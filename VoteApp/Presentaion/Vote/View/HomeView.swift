@@ -157,23 +157,22 @@ private struct ListView: View {
     @EnvironmentObject var voteViewModel: VoteViewModel
     fileprivate var body: some View {
         
-        
-            
         ScrollView {
             LazyVStack {
                 ForEach(voteViewModel.votes.indices, id: \.self) { index in
                     NavigationLink {
+                        VoteView()
                     }label: {
-                        
                         
                         VoteCellView(vote: voteViewModel.votes[index])
                             .cornerRadius(15)
                             .padding(.horizontal,10)
+                            .padding(.top,5)
                         
                     }
                 }
             }
-            .padding(.top,10)
+            .padding(.top,20)
             
         }
         .background(Color("vote-back"))
@@ -183,5 +182,10 @@ private struct ListView: View {
 
 #Preview {
     HomeView()
-        .environmentObject(VoteViewModel())
+        .environmentObject(VoteViewModel(votes: [
+            .init(voteID: 1, author: "짱구", title: "짜장 vs 짬뽕", createdTime: "2024.12.21"),
+            .init(voteID: 2, author: "맹구", title: "최악의 연인은?", createdTime: "2024.12.22"),
+            .init(voteID: 3, author: "수지", title: "여름 vs 겨울", createdTime: "2024.12.24")
+        ])
+        )
 }
