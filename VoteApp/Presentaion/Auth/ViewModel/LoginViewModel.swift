@@ -39,7 +39,7 @@ extension LoginViewModel {
         print(parameters)
         AF.request(url, method: .post, parameters: parameters,encoding: JSONEncoding.default,headers: header)
             .validate(statusCode: 200..<300) // 유효성 검사
-            .responseDecodable(of: Auth.loginResponse.self){ response in
+            .responseDecodable(of: Auth.TokenResponse.self){ response in
                 switch response.result {
 
                 case .success(let result):
