@@ -12,15 +12,23 @@ struct APIConstants {
     // MARK: - Base URL
     static let baseURL = "http:/localhost:8080"
     
-    // MARK: - SignUp URL
+    // MARK: - Auth
+    
+    // SignUp URL
     static let signUpURL = baseURL + "/auth/signup"
     
-    // MARK: - loginURL URL
+    // loginURL URL
     
     static let loginURL = baseURL + "/auth/login"
+    // AT 재발급 URL
+    static let reissueURL = baseURL + "/auth/reissue"
     
-    // MARK: - ID 중복체크
+    //  ID 중복체크
     static let usernameURL = baseURL + "/auth/username"
-    // MARK: - 닉네임 중복체크
+    //  닉네임 중복체크
     static let nicknameURL = baseURL + "/auth/nickname"
+    
+    //MARK: - Vote
+    static let voteURL = baseURL + "/votes"
+
 }
