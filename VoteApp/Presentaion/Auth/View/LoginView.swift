@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject private var loginViewModel: LoginViewModel
+    @StateObject private var voteViewModel = VoteViewModel()
     @StateObject private var pathModel = PathModel()
     @State var username: String = ""
     @State var password: String = ""
@@ -39,6 +40,7 @@ struct LoginView: View {
         }
         .environmentObject(pathModel)
         .environmentObject(loginViewModel)
+        .environmentObject(voteViewModel)
     }
 }
 //MARK: - 헤더 뷰
@@ -50,7 +52,7 @@ private struct TitleView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100)
-                    .foregroundColor(Color("chat-notice"))
+                    .foregroundColor(Color("fontColor"))
                     .padding()
                 
                 Text("간편한 투표 App vote is goat")
@@ -59,12 +61,12 @@ private struct TitleView: View {
                 HStack{
                     Text("voat")
                         .font(.system(size: 40,weight: .bold))
-                        .foregroundColor(Color("chat-notice"))
+                        .foregroundColor(Color("fontColor"))
                     Image(systemName: "hand.thumbsup.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 30)
-                        .foregroundColor(Color("chat-notice"))
+                        .foregroundColor(Color("fontColor"))
 
                 }
                 .padding(.leading)
