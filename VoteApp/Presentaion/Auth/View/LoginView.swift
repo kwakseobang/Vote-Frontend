@@ -35,12 +35,23 @@ struct LoginView: View {
                     HomeView()
                         .navigationBarBackButtonHidden()
                 // TODO: - 경로 추가 예정
+                case .voteListView:
+                    VoteListView()
+                        .environmentObject(voteViewModel)
+                        .environmentObject(loginViewModel)
+                case .settingView:
+                    SettingView()
+                        .environmentObject(voteViewModel)
+                        
+                        .environmentObject(loginViewModel)
+                case .voteCreateView:
+                    VoteCreateView()
+                        .environmentObject(voteViewModel)
+                        .environmentObject(loginViewModel)
                 }
             }
         }
         .environmentObject(pathModel)
-        .environmentObject(loginViewModel)
-        .environmentObject(voteViewModel)
     }
 }
 //MARK: - 헤더 뷰

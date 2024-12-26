@@ -6,9 +6,13 @@
 //
 
 import Foundation
-import Foundation
 
 struct Vote {
+    struct Response: Codable {
+        let status: Int
+        let message, code: String
+        let data: JSONNull?
+    }
     
     // MARK: - 투표 목록 조회
     struct VotesResponse: Codable {
@@ -27,6 +31,7 @@ struct Vote {
             case author, title, createdTime
         }
     }
+
     // MARK: - 투표 조회
     struct VoteResponse: Codable {
         let status: Int
@@ -38,8 +43,8 @@ struct Vote {
     struct VoteDetails: Codable {
         let voteID: Int
         var title: String
-        let selectedItemID: Int
-        var selectedVoteItem: String
+        let selectedItemID: Int?  // 옵셔널 처리
+        var selectedVoteItem: String?  // 옵셔널 처리
         let createdTime: String
         var voteItems: [VoteItem]
 
@@ -50,9 +55,14 @@ struct Vote {
             case selectedVoteItem, createdTime, voteItems
         }
     }
-    
+
     // MARK: - VoteItem
-    struct VoteItem: Codable {
+    struct VoteItem: Codable, Identifiable {
+        // Identifiable 요구사항 충족
+        var id: Int {
+            voteItemID
+        }
+
         let voteItemID: Int
         var itemName: String
         var count: Int
@@ -63,5 +73,4 @@ struct Vote {
         }
     }
 
-    
 }

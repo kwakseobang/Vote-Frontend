@@ -27,6 +27,7 @@ final class  AuthInterceptor: RequestInterceptor {
     // 네트워크 요청이 실패했을 때 재시도 정책을 설정할 수 있습니다.
     // 예를 들어, 액세스 토큰 만료 시 리프레시 토큰을 사용하여 새로운 액세스 토큰을 가져오는 로직을 추가할 수 있습니다.
     func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> Void)  {
+        
         guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
                    completion(.doNotRetryWithError(error))
                    return

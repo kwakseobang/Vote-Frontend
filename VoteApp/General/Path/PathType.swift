@@ -9,19 +9,12 @@ import Foundation
 
 enum PathType: Hashable {
     case homeView
-//    case postView
-//    case favoriteView
-//    case chatView
-//    case settingView
-//    case postCreationFirstView
-//    case LivingAlonePostFirstView
+    case voteListView
+    case voteCreateView
+
+    case settingView
 
 
 }
 
 
-//enum PostPathType: Hashable {
-//    case selectView
-//    case LivingAlonePostFirstView
-//    case LivingAlonePostSecondView
-//}
