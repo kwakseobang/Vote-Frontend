@@ -14,16 +14,18 @@ class VoteViewModel: ObservableObject {
     @Published var vote: Vote.VoteDetails
     @Published var voteItems: [Vote.VoteItem]
     @Published var isLoading: Bool = false  // 로딩 상태 추적
-    
+    @Published var voteAuthor: Vote.AuthorInfo
     
     init(
         votes: [Vote.Votes] = [],
         voteItems: [Vote.VoteItem] = [],
-        vote: Vote.VoteDetails = .init(voteID: 1, title: "", selectedItemID: 1, selectedVoteItem: "", createdTime: "", voteItems: [])
+        vote: Vote.VoteDetails = .init(voteID: 0, title: "", selectedItemID: 1, selectedVoteItem: "", createdTime: "", voteItems: []),
+        voteAuthor: Vote.AuthorInfo = .init(userID: 0, voteID: 0, title: "", createTime: "")
     ) {
         self.votes = votes
         self.voteItems = voteItems
         self.vote = vote
+        self.voteAuthor = voteAuthor
     }
     
     
@@ -55,6 +57,24 @@ extension VoteViewModel {
 
     public func getPostOrPutHttpMethod() -> HTTPMethod {
         return self.isFirstVote() ? .post : .put
+    }
+    
+    public func isAuthor(authorId: Int) -> Bool {
+   
+        // UserDefaults에서 액세스 토큰을 가져옵니다.
+        if let accessToken = UserDefaultsManager.getData(type: String.self, forKey: .accessToken),
+           let payload = decodeJWT(accessToken) {
+            // Payload에서 "id" 키의 값을 가져옴
+                if let userId = payload["username"] as? String {
+                    return Int(userId) == authorId
+                } else {
+                    print("ID not found in the payload.")
+                    return false
+                }
+        } else {
+            return false
+        }
+        
     }
 //    public func updateOrFirst() -> vo {
 //        isFirstVote()
@@ -145,7 +165,7 @@ extension VoteViewModel {
                 
             }
     }
-    struct Empty: Decodable {}
+    
     // MARK: - 투표 제출
     func submitVote(voteId: Int,voteItemId: Int, completion: @escaping (Bool) -> Void) {
         let voteId : String = "\(voteId)"
@@ -234,6 +254,90 @@ extension VoteViewModel {
             }
     }
     
-
+    // MARK: - 투표 조회
+    func deleteVote(voteId: Int, completion: @escaping (Bool) -> Void) {
+        let voteId : String = "\(voteId)"
+        guard let url = URL(string:APIConstants.voteURL + "/" + voteId) else {
+            print("Invalid URL")
+            completion(false)
+            return
+        }
+        let header: HTTPHeaders = [
+            "Content-Type" : "application/json"
+        ]
+        AF.request(url, method: .delete,encoding: JSONEncoding.default,headers: header,interceptor: AuthInterceptor())
+            .validate(statusCode: 200..<300) // 유효성 검사
+            .responseData{ response in
+                switch response.result {
+                    
+                case .success(_):
+                    completion(true)
+                    
+                    print("투표  삭제 성공")
+                    
+                case .failure(let error):
+                    // 실패 시 오류 처리
+                    if let httpResponse = response.response, httpResponse.statusCode == 401 {
+                        // 401 Unauthorized일 경우 리프레시 토큰을 갱신하고 재시도
+                        print("인증 오류 - 리프레시 토큰으로 액세스 토큰을 갱신해야 합니다.")
+                        self.error?.statusCode = httpResponse.statusCode
+                        // 로그인 화면으로 리다이렉트하거나 리프레시 토큰 로직을 추가합니다.
+                        self.error?.message = "로그인 세션이 만료되었습니다. 다시 로그인 해주세요."
+                    } else {
+                        // 다른 오류 처리
+                        print("투표 조회 실패: \(error.localizedDescription)")
+                        self.error?.statusCode = response.response!.statusCode
+                        self.error?.message = "투표를 조회하는데 실패했습니다. 다시 시도해주세요."
+                    }
+                    completion(false)
+                }
+                
+                
+            }
+    }
+    // MARK: - 투표 작성자 조회
+    func getVoteAuthor(voteId: Int, completion: @escaping (Vote.AuthorInfo?) -> Void) {
+        let voteId : String = "\(voteId)"
+        guard let url = URL(string:APIConstants.voteURL + "/" + voteId + "/author") else {
+            print("Invalid URL")
+            completion(nil)
+            return
+        }
+        let header: HTTPHeaders = [
+            "Content-Type" : "application/json"
+        ]
+        print(url)
+        AF.request(url, method: .get,encoding: JSONEncoding.default,headers: header,interceptor: AuthInterceptor())
+            .validate(statusCode: 200..<300) // 유효성 검사
+            .responseDecodable(of: Vote.VoteAuthor.self){ response in
+                switch response.result {
+                    
+                case .success(let result):
+                    self.voteAuthor = result.data
+                    completion(result.data)
+                    
+                    print("작성자 조회 성공")
+                    
+                case .failure(let error):
+                    // 실패 시 오류 처리
+                    if let httpResponse = response.response, httpResponse.statusCode == 401 {
+                        // 401 Unauthorized일 경우 리프레시 토큰을 갱신하고 재시도
+                        print("인증 오류 - 리프레시 토큰으로 액세스 토큰을 갱신해야 합니다.")
+                        self.error?.statusCode = httpResponse.statusCode
+                        // 로그인 화면으로 리다이렉트하거나 리프레시 토큰 로직을 추가합니다.
+                        self.error?.message = "로그인 세션이 만료되었습니다. 다시 로그인 해주세요."
+                    } else {
+                        // 다른 오류 처리
+                        print("작성자 조회 실패: \(error.localizedDescription)")
+                       print( response)
+                        self.error?.statusCode = response.response!.statusCode
+                        self.error?.message = "작성자 조회하는데 실패했습니다. 다시 시도해주세요."
+                    }
+                    completion(nil)
+                }
+                
+                
+            }
+    }
 
 }

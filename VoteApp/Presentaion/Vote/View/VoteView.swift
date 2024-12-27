@@ -11,10 +11,13 @@ struct VoteView: View {
     @EnvironmentObject private var voteViewModel: VoteViewModel
     @Environment(\.presentationMode)  var mode
     var voteId: Int
+    @State private var isShowingAlert = false
+    @State private var alertMessage = ""
+    @State private var isAuthor: Bool = false
     var body: some View {
         
         VStack {
-         
+            
             if voteViewModel.isLoading {
                 ProgressView("Loading...")
                     .progressViewStyle(CircularProgressViewStyle())
@@ -33,7 +36,7 @@ struct VoteView: View {
         .onAppear {
             // View가 나타날 때 vote 데이터를 비동기적으로 불러오기
             voteViewModel.isLoading = true
-            voteViewModel.getVote(voteId: voteId){ voteDetails in
+            voteViewModel.getVote(voteId: self.voteId){ voteDetails in
                 if let voteDetails = voteDetails {
                     voteViewModel.vote = voteDetails
                     voteViewModel.isLoading = false
@@ -44,6 +47,16 @@ struct VoteView: View {
                 }
             }
             
+            // TODO: Settings action
+            voteViewModel.getVoteAuthor(voteId: self.voteId) { result in
+                if let voteAuthor = result {
+                    voteViewModel.voteAuthor = voteAuthor
+                    self.isAuthor = voteViewModel.isAuthor(authorId: voteAuthor.userID )
+                    print(isAuthor)
+                } else {
+                    self.isAuthor = false
+                }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitle("투표")
@@ -61,18 +74,32 @@ struct VoteView: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(Color("fontColor"))
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // TODO: Settings action
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(Color("fontColor"))
+                
+                    if self.isAuthor {
+                        // TODO: 작성자만 삭제할수있다.
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                voteViewModel.deleteVote(voteId: self.voteId) { result in
+                                    if result {
+                                        mode.wrappedValue.dismiss()
+                                    } else {
+                                        alertMessage = "투표 삭제에 실패했습니다. 다시 시도해주세요."
+                                        isShowingAlert = true
+                                    }
+                                }
+                                
+                            } label: {
+                                Text("삭제")
+                                    .foregroundStyle(Color("fontColor"))
+                            }
+                        }
                     }
                 }
-            }
+                
+            
         )
     }
-    
 }
 
 

@@ -73,4 +73,23 @@ struct Vote {
         }
     }
 
+    // MARK: - 투표 작성자
+    struct VoteAuthor: Codable {
+        let status: Int
+        let message, code: String
+        var data: AuthorInfo
+    }
+
+    // MARK: - AuthorInfo
+    struct AuthorInfo: Codable {
+        let userID, voteID: Int
+        let title, createTime: String
+
+        enum CodingKeys: String, CodingKey {
+            case userID = "userId"
+            case voteID = "voteId"
+            case title, createTime
+        }
+    }
+
 }

@@ -12,7 +12,7 @@ struct VoteCreateView: View {
     @EnvironmentObject private var pathModel: PathModel
     @Environment(\.presentationMode) var mode
     @State var title: String = ""
-    @State var voteItemList = [""]
+    @State var voteItemList = ["",""]
     @State private var isShowingAlert = false
     @State private var alertMessage = ""
 
@@ -198,7 +198,7 @@ private struct WriteBtnView: View {
             }
             .cornerRadius(20)
             Button {
-                if voteItemList.count > 1 {
+                if voteItemList.count > 2 {
                     voteItemList.removeLast()
                 }
             } label: {

@@ -23,13 +23,13 @@ struct HomeView: View {
                     Text("홈")
                 }.tag(0)
             
-            VoteCreateView()
+            SettingView()
                  .onTapGesture {
                      self.selectedIndex = 1
                  }
                  .tabItem {
-                     Image(systemName: "plus")
-                     Text("투표 작성")
+                     Image(systemName: "gearshape")
+                     Text("설정")
                      
                  }.tag(1)
             
@@ -51,14 +51,7 @@ struct HomeView: View {
                      Text("쪽지함")
                  }.tag(3)
             
-            SettingView()
-                 .onTapGesture {
-                     self.selectedIndex = 4
-                 }
-                 .tabItem {
-                     Image(systemName: "gearshape")
-                     Text("설정")
-                 }.tag(4)
+          
         }
         
         .environmentObject(VoteViewModel())
